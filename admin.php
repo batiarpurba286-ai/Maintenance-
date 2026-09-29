@@ -1,0 +1,14 @@
+<?php
+session_start(); require_once __DIR__.'/config.php';
+if(isset($_GET['logout'])){session_destroy();header('Location: admin.php');exit;}
+$error='';
+if(isset($_POST['login'])){
+  if(hash_equals(ADMIN_USERNAME,$_POST['username']??'') && hash_equals(ADMIN_PASSWORD,$_POST['password']??'')){session_regenerate_id(true);$_SESSION['admin']=true;header('Location: admin.php');exit;}
+  $error='Invalid username or password.';
+}
+if(!empty($_SESSION['admin']) && isset($_POST['maintenance'])){setMaintenance($_POST['maintenance']==='on');header('Location: admin.php');exit;}
+$loggedIn=!empty($_SESSION['admin']);
+?><!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Control</title>
+<style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070707;color:#fff;font-family:Arial}.panel{width:min(92%,520px);padding:32px;background:#111;border:1px solid #292929;border-radius:24px;box-shadow:0 25px 80px #000}h1{margin-top:0}.muted{color:#888}.field{width:100%;padding:14px;margin:8px 0 14px;background:#181818;color:#fff;border:1px solid #333;border-radius:12px}button{width:100%;padding:14px;border:0;border-radius:12px;background:#fff;color:#000;font-weight:700;cursor:pointer}.status{margin:22px 0;padding:18px;border-radius:15px;background:#181818}.online{color:#00e58a}.offline{color:#ff5555}.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions button:last-child{background:#ff4b4b;color:#fff}.logout{display:block;text-align:center;margin-top:20px;color:#888;text-decoration:none}.error{padding:12px;background:#301414;border:1px solid #5b2424;border-radius:10px;color:#ff8f8f}</style>
+</head><body><div class="panel"><?php if(!$loggedIn): ?><h1>Admin Login</h1><p class="muted">Control website maintenance mode.</p><?php if($error): ?><div class="error"><?=htmlspecialchars($error)?></div><?php endif; ?><form method="post"><input class="field" name="username" placeholder="Username" required><input class="field" type="password" name="password" placeholder="Password" required><button name="login" value="1">LOGIN</button></form>
+<?php else: ?><h1>Website Control</h1><p class="muted">Maintenance mode</p><div class="status"><strong class="<?=isMaintenanceEnabled()?'offline':'online'?>"><?=isMaintenanceEnabled()?'● MAINTENANCE ACTIVE':'● WEBSITE ONLINE'?></strong></div><form method="post"><div class="actions"><button name="maintenance" value="off">TURN OFF</button><button name="maintenance" value="on">TURN ON</button></div></form><a class="logout" href="?logout=1">Logout</a><?php endif; ?></div></body></html>
